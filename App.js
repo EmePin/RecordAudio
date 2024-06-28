@@ -1,10 +1,42 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Platform} from 'react-native';
 import { Audio } from 'expo-av';
 
 export default function App() {
   const [recording, setRecording] = React.useState();
   const [recordings, setRecordings] = React.useState([]);
+  
+  const enableAudio = async () => {
+    if (Platform.OS === 'ios') {
+      await Audio.setAudioModeAsync({
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+        
+        shouldDuckAndroid: false,
+      });
+    } else {
+      await Audio.setAudioModeAsync({
+        staysActiveInBackground: true,
+     
+        shouldDuckAndroid: false,
+        playThroughEarpieceAndroid: false,
+        allowsRecordingIOS: false,
+
+        playsInSilentModeIOS: true,
+      });
+    }
+  };
+
+  // Función para solicitar permisos y configurar el modo de audio
+  const configureAudio = async () => {
+    await Audio.requestPermissionsAsync();
+    await enableAudio();
+  };
+
+  // Llamada para configurar el audio antes de reproducir cualquier sonido
+  useEffect(() => {
+    configureAudio();
+  }, []);
 
   async function startRecording() {
     try {
