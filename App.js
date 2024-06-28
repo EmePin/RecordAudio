@@ -53,19 +53,31 @@ export default function App() {
   }
 
   async function stopRecording() {
-    setRecording(undefined);
-
-    await recording.stopAndUnloadAsync();
-    let allRecordings = [...recordings];
-    const { sound, status } = await recording.createNewLoadedSoundAsync();
-    allRecordings.push({
-      sound: sound,
-      duration: getDurationFormatted(status.durationMillis),
-      file: recording.getURI()
-    });
-
-    setRecordings(allRecordings);
+    try {
+      setRecording(undefined);
+  
+      await recording.stopAndUnloadAsync();
+      let allRecordings = [...recordings];
+      const { sound, status } = await recording.createNewLoadedSoundAsync();
+      allRecordings.push({
+        sound: sound,
+        duration: getDurationFormatted(status.durationMillis),
+        file: recording.getURI()
+      });
+  
+      // Configura el modo de audio para la reproducción del sonido grabado
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+        playThroughEarpieceAndroid: false,
+      });
+  
+      setRecordings(allRecordings);
+    } catch (err) {
+      console.log('Error stopping recording:', err);
+    }
   }
+  
 
   async function playPredefinedSound() {
     const soundObject = new Audio.Sound();
